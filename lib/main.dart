@@ -3,6 +3,8 @@ import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:weibo/api.dart';
 import 'package:weibo/access_token_model.dart';
 
+import 'package:weibo/weibo_login_page.dart';
+
 const kAndroidUserAgent =
     'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Mobile Safari/537.36';
 
@@ -142,14 +144,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+
+  }
+
+  @override
   Widget build(BuildContext context) {
-//    print("渲染页面");
     var token = Api.instance.getToken();
-//    print(token.toString());
-//    token.then(value)
-//    if (token.then(onValue))
     token.then((value){
       print("异步返回数据 $value");
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return WeiboLoginPage();
+      }));
     });
     return Scaffold(
       appBar: AppBar(

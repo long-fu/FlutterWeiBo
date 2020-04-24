@@ -22,6 +22,10 @@ class _WeiboLoginPage extends State<WeiboLoginPage> {
 
     flutterWebviewPlugin.onUrlChanged.listen((String url) {
       print('url call back $url');
+      if (url.contains("https://onelcat.github.io/")) {
+        var code = url.replaceAll("https://onelcat.github.io/", "replace");
+        print("解析出code");
+      }
     });
 
     return WebviewScaffold(
