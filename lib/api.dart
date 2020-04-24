@@ -14,9 +14,13 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
-import 'access_token_model.dart';
+import 'package:weibo/model/access_token_model.dart';
+// import 'access_token_model.dart';
+
 import 'dart:async';
 import 'dart:convert';
+
+
 
 class Api {
   // 工厂模式
