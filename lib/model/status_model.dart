@@ -34,6 +34,7 @@ import 'dart:ffi';
 import 'package:json_annotation/json_annotation.dart'; // JSON 数据模型 序列化
 import 'package:weibo/model/geo_model.dart';
 import 'package:weibo/model/user_model.dart';
+import 'package:weibo/model/pic_url_model.dart';
 
 part 'status_model.g.dart';
 
@@ -41,7 +42,7 @@ part 'status_model.g.dart';
 class Status {
   String created_at;
   int id;
-  int mid;
+  String mid;
   String idstr;
   String text;
   String source;
@@ -60,7 +61,7 @@ class Status {
   Geo geo;
   User user;
   Status retweeted_status;
-
+  List<PicUrl> pic_urls;
   Status(
       this.created_at,
       this.id,
@@ -82,7 +83,10 @@ class Status {
       this.mlevel,
       this.geo,
       this.user,
-      this.retweeted_status);
+      this.retweeted_status,
+      this.pic_urls,
+
+      );
 
   factory Status.fromJson(Map<String, dynamic> json) => _$StatusFromJson(json);
   Map<String, dynamic> toJson() => _$StatusToJson(this);

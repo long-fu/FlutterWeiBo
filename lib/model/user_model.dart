@@ -45,8 +45,8 @@ class User {
   String idstr;
   String screen_name;
   String name;
-  int province;
-  int city;
+  String province;
+  String city;
   String location;
   String description;
   String url;

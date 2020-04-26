@@ -1,9 +1,11 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:weibo/api.dart';
-
-
+import 'package:weibo/model/pic_url_model.dart';
 import 'package:weibo/weibo_login_page.dart';
+import 'package:weibo/model/status_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 void main() => runApp(MyApp());
 
@@ -49,19 +51,175 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  var _isLogin = true;
+
+  List<Status> _dataSources = [];
+
+
+//  Widget getPickView(BuildContext context, int index) {
+//    var item = _dataSources[index];
+//
+//  }
+
+  Widget buildPicUrls(BuildContext context, int index) {
+    // 进如到这里默认存在数据
+    var item = _dataSources[index];
+    var pickUrls = item.pic_urls;
+    var imageCount = pickUrls.length;
+
+    if (imageCount == 1) {
+      var url = item.pic_urls[0].thumbnail_pic;
+      url = WeiBoApi.getPicUrl(url, EnumPicUrl.bmiddle_pic);
+      var img = CachedNetworkImage(
+        imageUrl: url,
+      );
+
+      return Container(
+        alignment: Alignment.centerLeft,
+        width: _sw,
+        height: _sw / 3,
+        padding: EdgeInsets.all(10),
+        child: img,
+      );
+
+    }
+
+    if (imageCount == 2) {
+      var height = _sw / 2;
+      return Container(
+        color: Colors.black,
+        width: _sw,
+        height: height,
+        padding: EdgeInsets.all(10),
+        child: GridView.builder(
+            itemCount: 2,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: imageCount,
+                mainAxisSpacing: 5.0,
+                crossAxisSpacing: 5.0,
+                childAspectRatio: 1.0),
+            itemBuilder: (BuildContext context, int index) {
+              var url = item.pic_urls[index].thumbnail_pic;
+              url = WeiBoApi.getPicUrl(url, EnumPicUrl.bmiddle_pic);
+              var img = CachedNetworkImage(
+                imageUrl: url,
+              );
+              return img;
+            }),
+      );
+    }
+
+    if (imageCount == 3) {
+      var height = _sw / 3;
+      return Container(
+        color: Colors.black,
+        width: _sw,
+        height: height,
+        padding: EdgeInsets.all(10),
+        child: GridView.builder(
+            itemCount: imageCount,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 5.0,
+                crossAxisSpacing: 5.0,
+                childAspectRatio: 1.0),
+            itemBuilder: (BuildContext context, int index) {
+              var url = item.pic_urls[index].thumbnail_pic;
+              url = WeiBoApi.getPicUrl(url, EnumPicUrl.bmiddle_pic);
+              var img = CachedNetworkImage(
+                imageUrl: url,
+              );
+              return img;
+            }),
+      );
+    }
+
+    if (imageCount == 4) {
+       var itemHeight = _sw / 2;
+       var height = 2 * itemHeight;
+
+       return Container(
+         color: Colors.black,
+         width: _sw,
+         height: height,
+         padding: EdgeInsets.all(10),
+         child: GridView.builder(
+             itemCount: imageCount,
+             physics: NeverScrollableScrollPhysics(),
+             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                 crossAxisCount: 2,
+                 mainAxisSpacing: 5.0,
+                 crossAxisSpacing: 5.0,
+                 childAspectRatio: 1.0),
+             itemBuilder: (BuildContext context, int index) {
+               var url = item.pic_urls[index].thumbnail_pic;
+               url = WeiBoApi.getPicUrl(url, EnumPicUrl.bmiddle_pic);
+               var img = CachedNetworkImage(
+                 imageUrl: url,
+               );
+               return img;
+             }),
+       );
+    }
+
+    return Container(
+      color: Colors.black,
+      width: _sw,
+      height: _sw,
+      padding: EdgeInsets.all(10),
+      child: GridView.builder(
+          itemCount: imageCount,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: 5.0,
+              crossAxisSpacing: 5.0,
+              childAspectRatio: 1.0),
+          itemBuilder: (BuildContext context, int index) {
+            var url = item.pic_urls[index].thumbnail_pic;
+            url = WeiBoApi.getPicUrl(url, EnumPicUrl.bmiddle_pic);
+            var img = CachedNetworkImage(
+              imageUrl: url,
+            );
+            return img;
+          }),
+    );
+
+
+  }
+
   Widget buildListItem(BuildContext context, int index) {
+
+    var item = _dataSources[index];
+    var abiaoqian = RegExp(r'<a.*?>(.*?)<\/a>');
+    var sourceStr = '';
+    if (item.source.length > 0) {
+      var source = abiaoqian.firstMatch(item.source);
+      sourceStr = source.group(1);
+    }
+
+
     var userName = Padding(
       padding: EdgeInsets.only(left: 10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[Text("我是谁"), Text("这是日期")],
+        children: <Widget>[
+          Text(item.user.screen_name),
+          Text(sourceStr),
+        ],
       ),
     );
 
-    var netImage = Image.network(
-        "https://c-ssl.duitang.com/uploads/item/201707/21/20170721180225_NvVJc.jpeg");
     const assetImage = Image(image: AssetImage('images/avatar.jpg'));
+    var netImage = CachedNetworkImage(
+      imageUrl: item.user.avatar_large,
+      placeholder: (context, url) => assetImage,
+      errorWidget: (context, url, error) => Image.asset("images/app.png"),
+    );
+
     var userAvatar = Container(
       width: 50,
       height: 50,
@@ -70,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     var userWidget = Padding(
-      padding: EdgeInsets.fromLTRB(8, 8, 8, 0),
+      padding: EdgeInsets.fromLTRB(8, 8, 8, 8),
       child: Row(
         children: <Widget>[
           userAvatar,
@@ -82,57 +240,69 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-    var text_str = "我是开的是的饿字符串三大空间的哈开始大渡卡上的卡上卡上的卡技术的卡刷卡是的卡";
-    for (var i = 0; i < (index + 1); i = i + 1) {
-      text_str = text_str + "$i" + "我需要增量更新这些";
-    }
+    var text_str = item.text;
 
-    var text = Padding(
-      padding: EdgeInsets.fromLTRB(8, 8, 8, 8),
-      child: Text(text_str),
+    var text = Container(
+      color: Colors.yellow,
+      width: double.infinity,
+      margin: EdgeInsets.all(8),
+      child: Text(
+        text_str,
+        textAlign: TextAlign.start,
+      ),
     );
 
-    var imagesWidget = GridView.builder(
-        itemCount: 3,
-        //SliverGridDelegateWithFixedCrossAxisCount 构建一个横轴固定数量Widget
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            //横轴元素个数
-            crossAxisCount: 3,
-            //纵轴间距
-            mainAxisSpacing: 20.0,
-            //横轴间距
-            crossAxisSpacing: 10.0,
-            //子组件宽高长度比例
-            childAspectRatio: 1.0),
-        itemBuilder: (BuildContext context, int index) {
-          //Widget Function(BuildContext context, int index)
-          return Image(image: AssetImage('images/avatar.jpg'));
-        });
+    print("需要渲染的${item.pic_urls}");
+
+    var imageCount = item.pic_urls == null ? 0 : item.pic_urls.length;
+
+    Widget imagesWidget;
+    if (imageCount > 0) {
+      imagesWidget = buildPicUrls(context,index);
+    }
+
 
     var commentWidget = Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Text("转发2007"),
-        Text("评论1111"),
-        Text("点赞2222"),
+        Text("转发${item.reposts_count}"),
+        Text("评论${item.comments_count}"),
+        Text("点赞${item.attitudes_count}"),
       ],
     );
 
-    var myContext = Container(
-      color: Colors.red,
-      margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
-      child: Column(
-        children: <Widget>[
-          userWidget,
-          text,
-          // imagesWidget,
-          commentWidget
-        ],
-      ),
+    var cw = Padding(
+      padding: EdgeInsets.only(bottom: 5),
+      child: commentWidget,
     );
 
-    return myContext;
+    if (imageCount > 0) {
+      return Container(
+        color: Colors.red,
+        margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
+        child: Column(
+          children: <Widget>[
+            userWidget,
+            text,
+            imagesWidget,
+            cw
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        color: Colors.red,
+        margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
+        child: Column(
+          children: <Widget>[
+            userWidget,
+            text,
+            cw
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -140,30 +310,79 @@ class _MyHomePageState extends State<MyHomePage> {
     // TODO: implement initState
     super.initState();
 
-
+    // 调用一次
+    var token = WeiBoApi.instance.getToken();
+    token.then((value) {
+      setState(() {
+        _isLogin = value;
+      });
+    });
   }
+
+  double _sw = 0;
+  double _sh = 0;
 
   @override
   Widget build(BuildContext context) {
-    var token = Api.instance.getToken();
-    token.then((value){
-      print("异步返回数据 $value");
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return WeiboLoginPage();
-      }));
-    });
+    var scSize = MediaQuery
+        .of(context)
+        .size;
+
+    this._sw = scSize.width;
+    this._sh = scSize.height;
+
+    print(scSize);
+
+    Widget title() {
+      if (WeiBoApi.instance.isLogin || this._isLogin) {
+        return Text("微博");
+      } else {
+        return ButtonBar(
+          children: <Widget>[
+            InkWell(
+              onTap: () =>
+              {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return WeiboLoginPage();
+                }))
+              },
+              child: Text("登录"),
+            )
+          ],
+        );
+      }
+    }
+
+    Future<Null> _onRefresh() async {
+      var statuses = WeiBoApi.instance.getStatusesHomeTimeline((resultData) {});
+      var that = this;
+      statuses.then((value) {
+        var list = value.statuses;
+        setState(() {
+          that._dataSources = list;
+        });
+      });
+    }
+
+    Widget myBody() {
+      return RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: ListView.builder(
+          // padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+            itemCount: _dataSources.length,
+            itemBuilder: (BuildContext context, int index) {
+              return buildListItem(context, index);
+            }),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: title(),
       ),
-      body: ListView.builder(
-          // padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-          itemCount: 20,
-          itemBuilder: (BuildContext context, int index) {
-            return buildListItem(context, index);
-          }),
+      body: myBody(),
     );
   }
 }

@@ -9,7 +9,7 @@ part 'access_token_model.g.dart';
 class AccessToken {
   String access_token;
   String remind_in;
-  String expires_in;
+  int expires_in;
   String uid;
   String isRealName;
   AccessToken(this.access_token,this.remind_in,this.expires_in,this.uid,this.isRealName);
