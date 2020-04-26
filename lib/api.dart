@@ -135,6 +135,37 @@ class WeiBoApi {
     return accessToken;
   }
 
+  var _page_index = 0;
+
+//  下啦刷新
+  Future<StatusesResult> getDownRefreshStatuses(void Function(StatusesResult data) resultCallBack) async {
+    this. _page_index = 0;
+    var url = 'https://api.weibo.com/2/statuses/home_timeline.json?access_token=${this._accessToken.access_token}';
+    print("进行请求数据$url");
+    final response = await http.get(url);
+    final parsed = json.decode(response.body);
+    print("微博数据${response.body}");
+    var result = StatusesResult.fromJson(parsed);
+    this._page_index += 1;
+    print("解析返回的对象${result.statuses.length}");
+    resultCallBack(result);
+    return result;
+  }
+  /*上啦加载*/
+  Future<StatusesResult> getUpLoadingStatuses(void Function(StatusesResult data) resultCallBack) async {
+
+    var url = 'https://api.weibo.com/2/statuses/home_timeline.json?access_token=${this._accessToken.access_token}&page=${_page_index}';
+    print("进行请求数据$url");
+    final response = await http.get(url);
+
+    final parsed = json.decode(response.body);
+    print("微博数据${response.body}");
+    var result = StatusesResult.fromJson(parsed);
+    print("解析返回的对象${result.statuses.length}");
+    this._page_index += 1;
+    resultCallBack(result);
+    return result;
+  }
 
   Future<StatusesResult> getStatusesHomeTimeline(void Function(StatusesResult data) resultCallBack) async {
     var url = 'https://api.weibo.com/2/statuses/home_timeline.json?access_token=${this._accessToken.access_token}';

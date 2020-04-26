@@ -55,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Status> _dataSources = [];
 
+  ScrollController _controller = new ScrollController();
 
 //  Widget getPickView(BuildContext context, int index) {
 //    var item = _dataSources[index];
@@ -81,7 +82,6 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: EdgeInsets.all(10),
         child: img,
       );
-
     }
 
     if (imageCount == 2) {
@@ -137,31 +137,31 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (imageCount == 4) {
-       var itemHeight = _sw / 2;
-       var height = 2 * itemHeight;
+      var itemHeight = _sw / 2;
+      var height = 2 * itemHeight;
 
-       return Container(
-         color: Colors.black,
-         width: _sw,
-         height: height,
-         padding: EdgeInsets.all(10),
-         child: GridView.builder(
-             itemCount: imageCount,
-             physics: NeverScrollableScrollPhysics(),
-             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                 crossAxisCount: 2,
-                 mainAxisSpacing: 5.0,
-                 crossAxisSpacing: 5.0,
-                 childAspectRatio: 1.0),
-             itemBuilder: (BuildContext context, int index) {
-               var url = item.pic_urls[index].thumbnail_pic;
-               url = WeiBoApi.getPicUrl(url, EnumPicUrl.bmiddle_pic);
-               var img = CachedNetworkImage(
-                 imageUrl: url,
-               );
-               return img;
-             }),
-       );
+      return Container(
+        color: Colors.black,
+        width: _sw,
+        height: height,
+        padding: EdgeInsets.all(10),
+        child: GridView.builder(
+            itemCount: imageCount,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 5.0,
+                crossAxisSpacing: 5.0,
+                childAspectRatio: 1.0),
+            itemBuilder: (BuildContext context, int index) {
+              var url = item.pic_urls[index].thumbnail_pic;
+              url = WeiBoApi.getPicUrl(url, EnumPicUrl.bmiddle_pic);
+              var img = CachedNetworkImage(
+                imageUrl: url,
+              );
+              return img;
+            }),
+      );
     }
 
     return Container(
@@ -186,12 +186,9 @@ class _MyHomePageState extends State<MyHomePage> {
             return img;
           }),
     );
-
-
   }
 
   Widget buildListItem(BuildContext context, int index) {
-
     var item = _dataSources[index];
     var abiaoqian = RegExp(r'<a.*?>(.*?)<\/a>');
     var sourceStr = '';
@@ -199,7 +196,6 @@ class _MyHomePageState extends State<MyHomePage> {
       var source = abiaoqian.firstMatch(item.source);
       sourceStr = source.group(1);
     }
-
 
     var userName = Padding(
       padding: EdgeInsets.only(left: 10),
@@ -258,9 +254,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Widget imagesWidget;
     if (imageCount > 0) {
-      imagesWidget = buildPicUrls(context,index);
+      imagesWidget = buildPicUrls(context, index);
     }
-
 
     var commentWidget = Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -282,12 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
         color: Colors.red,
         margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
         child: Column(
-          children: <Widget>[
-            userWidget,
-            text,
-            imagesWidget,
-            cw
-          ],
+          children: <Widget>[userWidget, text, imagesWidget, cw],
         ),
       );
     } else {
@@ -295,11 +285,7 @@ class _MyHomePageState extends State<MyHomePage> {
         color: Colors.red,
         margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
         child: Column(
-          children: <Widget>[
-            userWidget,
-            text,
-            cw
-          ],
+          children: <Widget>[userWidget, text, cw],
         ),
       );
     }
@@ -310,13 +296,39 @@ class _MyHomePageState extends State<MyHomePage> {
     // TODO: implement initState
     super.initState();
 
+    //给_controller添加监听
+    _controller.addListener(() {
+      //判断是否滑动到了页面的最底部
+      if (_controller.position.pixels == _controller.position.maxScrollExtent) {
+        //如果不是最后一页数据，则生成新的数据添加到list里面
+        var result = WeiBoApi.instance.getUpLoadingStatuses((result) {});
+        result.then((value) {
+          setState(() {
+            _dataSources = _dataSources + value.statuses;
+          });
+        });
+      }
+    });
+
     // 调用一次
     var token = WeiBoApi.instance.getToken();
-    token.then((value) {
-      setState(() {
-        _isLogin = value;
-      });
+    token.then((isLogin) {
+
+      if (isLogin) {
+        var result = WeiBoApi.instance.getDownRefreshStatuses((result){});
+        result.then((value) {
+          setState(() {
+            _dataSources = _dataSources + value.statuses;
+            _isLogin = isLogin;
+          });
+        });
+      }
     });
+
+
+
+
+
   }
 
   double _sw = 0;
@@ -324,9 +336,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    var scSize = MediaQuery
-        .of(context)
-        .size;
+    var scSize = MediaQuery.of(context).size;
 
     this._sw = scSize.width;
     this._sh = scSize.height;
@@ -340,8 +350,7 @@ class _MyHomePageState extends State<MyHomePage> {
         return ButtonBar(
           children: <Widget>[
             InkWell(
-              onTap: () =>
-              {
+              onTap: () => {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return WeiboLoginPage();
                 }))
@@ -354,7 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     Future<Null> _onRefresh() async {
-      var statuses = WeiBoApi.instance.getStatusesHomeTimeline((resultData) {});
+      var statuses = WeiBoApi.instance.getDownRefreshStatuses((resultData) {});
       var that = this;
       statuses.then((value) {
         var list = value.statuses;
@@ -368,7 +377,8 @@ class _MyHomePageState extends State<MyHomePage> {
       return RefreshIndicator(
         onRefresh: _onRefresh,
         child: ListView.builder(
-          // padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+            controller: _controller,
+            // padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
             itemCount: _dataSources.length,
             itemBuilder: (BuildContext context, int index) {
               return buildListItem(context, index);
