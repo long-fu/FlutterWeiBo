@@ -100,6 +100,7 @@ class WeiBoApi {
   }
 
   Future<bool> getToken() async {
+    print("获取存书的token");
     Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     final SharedPreferences prefs = await _prefs;
     String access_token;
@@ -119,6 +120,8 @@ class WeiBoApi {
     expires_in = prefs.getInt('expires_in') ?? 0;
     uid = prefs.getString('uid') ?? '';
     isRealName = prefs.getString('isRealName') ?? "";
+
+
 
     this._accessToken = AccessToken(access_token,
         remind_in,
@@ -140,6 +143,7 @@ class WeiBoApi {
 //  下啦刷新
   Future<StatusesResult> getDownRefreshStatuses(void Function(StatusesResult data) resultCallBack) async {
     this. _page_index = 0;
+    print("刷新数据");
     var url = 'https://api.weibo.com/2/statuses/home_timeline.json?access_token=${this._accessToken.access_token}';
     print("进行请求数据$url");
     final response = await http.get(url);
@@ -159,25 +163,25 @@ class WeiBoApi {
     final response = await http.get(url);
 
     final parsed = json.decode(response.body);
-    print("微博数据${response.body}");
+//    print("微博数据${response.body}");
     var result = StatusesResult.fromJson(parsed);
-    print("解析返回的对象${result.statuses.length}");
+//    print("解析返回的对象${result.statuses.length}");
     this._page_index += 1;
     resultCallBack(result);
     return result;
   }
 
-  Future<StatusesResult> getStatusesHomeTimeline(void Function(StatusesResult data) resultCallBack) async {
-    var url = 'https://api.weibo.com/2/statuses/home_timeline.json?access_token=${this._accessToken.access_token}';
-    print("进行请求数据$url");
-    final response = await http.get(url);
-    final parsed = json.decode(response.body);
-    print("微博数据${response.body}");
-    var result = StatusesResult.fromJson(parsed);
-    print("解析返回的对象${result.statuses.length}");
-    resultCallBack(result);
-    return result;
-  }
+//  Future<StatusesResult> getStatusesHomeTimeline(void Function(StatusesResult data) resultCallBack) async {
+//    var url = 'https://api.weibo.com/2/statuses/home_timeline.json?access_token=${this._accessToken.access_token}';
+//    print("进行请求数据$url");
+//    final response = await http.get(url);
+//    final parsed = json.decode(response.body);
+//    print("微博数据${response.body}");
+//    var result = StatusesResult.fromJson(parsed);
+//    print("解析返回的对象${result.statuses.length}");
+//    resultCallBack(result);
+//    return result;
+//  }
 
   WeiBoApi._internal() {
     // 初始化

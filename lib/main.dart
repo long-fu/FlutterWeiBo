@@ -248,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
 
-    print("需要渲染的${item.pic_urls}");
+//    print("需要渲染的${item.pic_urls}");
 
     var imageCount = item.pic_urls == null ? 0 : item.pic_urls.length;
 
@@ -312,23 +312,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // 调用一次
     var token = WeiBoApi.instance.getToken();
+    print("object $token");
     token.then((isLogin) {
 
       if (isLogin) {
+        print("需要进行数据加载");
         var result = WeiBoApi.instance.getDownRefreshStatuses((result){});
         result.then((value) {
           setState(() {
+
             _dataSources = _dataSources + value.statuses;
             _isLogin = isLogin;
           });
         });
+      } else {
+        setState(() {
+          _isLogin = false;
+        });
       }
     });
-
-
-
-
-
   }
 
   double _sw = 0;
@@ -341,7 +343,7 @@ class _MyHomePageState extends State<MyHomePage> {
     this._sw = scSize.width;
     this._sh = scSize.height;
 
-    print(scSize);
+    print("绘制屏幕 $scSize");
 
     Widget title() {
       if (WeiBoApi.instance.isLogin || this._isLogin) {
@@ -363,6 +365,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     Future<Null> _onRefresh() async {
+      print("下啦刷新数据");
       var statuses = WeiBoApi.instance.getDownRefreshStatuses((resultData) {});
       var that = this;
       statuses.then((value) {
